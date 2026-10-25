@@ -1,9 +1,9 @@
-/* NeuroPolicy Cognita — one editorial column, paper-and-ink palette,
-   each lens (finance / politics / marketing / thinking) has its own ink colour. */
+/* NeuroPolicy Cognita — think-tank palette: white paper, black ink, navy as the one accent.
+   Each lens keeps its own shade within that range so the cross-links stay readable. */
 :root{
-  --paper:#eef1f4; --surface:#ffffff; --ink:#141c2e; --muted:#5a6377; --line:#cdd3dc;
-  --accent:#b8862b; --accent-ink:#7a5614; --stripe:#dfe4ea;
-  --l-finance:#a87420; --l-politics:#2f5d8a; --l-marketing:#a04a32; --l-thinking:#5b4f8f;
+  --paper:#ffffff; --surface:#f5f6f8; --ink:#0e1116; --muted:#5b6270; --line:#dfe2e7;
+  --accent:#14284b; --accent-ink:#14284b; --on-accent:#ffffff; --stripe:#eef0f3;
+  --l-finance:#14284b; --l-politics:#0e1116; --l-marketing:#3f679e; --l-thinking:#6b7280;
   --display:"Gloock", Georgia, "Times New Roman", serif;
   --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif:"Literata", Georgia, serif;
@@ -11,9 +11,9 @@
   --s1:.8125rem; --s3:1.25rem; --s4:1.75rem; --s5:clamp(2.2rem,5vw,3.4rem); --s6:clamp(2.6rem,7.5vw,5.4rem);
 }
 @media (prefers-color-scheme: dark){:root{
-  --paper:#0f1420; --surface:#161d2c; --ink:#e7ebf2; --muted:#9aa3b5; --line:#2a3346;
-  --accent:#d9a748; --accent-ink:#e7bd6a; --stripe:#1a2233;
-  --l-finance:#e0b25a; --l-politics:#7fa8d6; --l-marketing:#e08a6e; --l-thinking:#a99ae0;
+  --paper:#0b0d12; --surface:#13161d; --ink:#eef0f4; --muted:#9aa2b1; --line:#262b35;
+  --accent:#9db8e6; --accent-ink:#9db8e6; --on-accent:#0b0d12; --stripe:#171b23;
+  --l-finance:#9db8e6; --l-politics:#eef0f4; --l-marketing:#6f93cc; --l-thinking:#a3abb8;
   color-scheme:dark}}
 
 *{box-sizing:border-box}
@@ -52,7 +52,7 @@ p{margin:0}
 /* buttons */
 .btn{display:inline-block;text-decoration:none;font-weight:600;font-size:.95rem;padding:12px 20px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;font-family:var(--body)}
 .btn.ghost{background:transparent;color:var(--ink)}
-.btn:hover{background:var(--accent);border-color:var(--accent);color:#141c2e}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 
 /* lens chips */
 .chips{display:flex;gap:6px;flex-wrap:wrap}

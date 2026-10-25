@@ -17,7 +17,8 @@ const icons: Record<string, string> = {
 ---
 <Base>
   <section class="hero">
-    <canvas id="crossing" aria-hidden="true"></canvas>
+    <canvas id="ripple" aria-hidden="true"></canvas>
+    <div class="veil" aria-hidden="true"></div>
     <div class="wrap hero-inner">
       <span class="label">Behaviour · Policy · Markets</span>
       <h1>Strategic insights for a <em>complex</em> world</h1>
@@ -83,11 +84,13 @@ const icons: Record<string, string> = {
 </Base>
 
 <style>
-  .hero{position:relative;border-bottom:1px solid var(--line);overflow:hidden}
-  #crossing{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask-image:linear-gradient(90deg,transparent 38%,#000 80%);mask-image:linear-gradient(90deg,transparent 38%,#000 80%)}
-  .hero-inner{position:relative;padding-block:clamp(72px,12vw,140px) clamp(56px,9vw,104px)}
+  /* Hero follows the page theme: white with black and navy ripples (dark mode: black with white ripples). */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);min-height:clamp(480px,74vh,700px);display:flex;align-items:center}
+  #ripple{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .veil{position:absolute;inset:0;background:linear-gradient(90deg,var(--paper) 0%,color-mix(in srgb,var(--paper) 70%,transparent) 42%,transparent 80%)}
+  .hero-inner{position:relative;width:100%;padding-block:clamp(72px,12vw,140px) clamp(56px,9vw,104px)}
   .hero h1{font-size:var(--s6);max-width:12ch;letter-spacing:-.01em}
-  .hero h1 em{font-style:normal;color:var(--accent-ink)}
+  .hero h1 em{font-style:normal;color:var(--accent)}
   .hero p{max-width:46ch;margin-top:24px;font-size:var(--s3);color:var(--muted);line-height:1.5}
   .hero .label{margin-bottom:22px;display:block}
   .hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
@@ -113,40 +116,69 @@ const icons: Record<string, string> = {
 </style>
 
 <script>
-  // Hero: pedestrians crossing a zebra crossing, a nod to the original site's photo.
-  const c = document.getElementById('crossing') as HTMLCanvasElement | null;
-  if (c) {
-    const ctx = c.getContext('2d')!;
+  // Hero: rings rippling out from one point, like the spread of a single decision.
+  // Adapted from a 21st.dev shader, written in plain WebGL (no Three.js) and coloured from the site's own black, white and navy.
+  const canvas = document.getElementById('ripple') as HTMLCanvasElement | null;
+  const gl = canvas?.getContext('webgl', { antialias: true, premultipliedAlpha: false });
+  if (canvas && gl) {
+    const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+    const fs = `precision highp float;
+      uniform vec2 resolution;uniform float time;uniform vec3 bg;uniform vec3 ink;uniform vec3 navy;
+      void main(){
+        float m=min(resolution.x,resolution.y);
+        vec2 uv=(gl_FragCoord.xy*2.0-resolution.xy)/m;
+        uv.x-=0.3*resolution.x/m;
+        float t=time*0.05;float lw=0.002;vec3 col=vec3(0.0);
+        for(int j=0;j<3;j++){for(int i=0;i<5;i++){
+          col[j]+=lw*float(i*i)/abs(fract(t-0.01*float(j)+float(i)*0.01)*5.0-length(uv)+mod(uv.x+uv.y,0.2));
+        }}
+        vec3 a=col/(1.0+col);
+        vec3 c=mix(bg,navy,clamp(a.g*0.85,0.0,1.0));
+        c=mix(c,ink,clamp(a.r*0.75,0.0,1.0));
+        c=mix(c,navy,clamp(a.b*0.35,0.0,1.0));
+        gl_FragColor=vec4(c,1.0);
+      }`;
+    const mk = (type: number, src: string) => { const s = gl.createShader(type)!; gl.shaderSource(s, src); gl.compileShader(s); return s; };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uRes = gl.getUniformLocation(prog, 'resolution'), uTime = gl.getUniformLocation(prog, 'time');
+    const hex = (name: string) => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace('#', '');
+      const n = parseInt(v.length === 3 ? v.split('').map((x) => x + x).join('') : v, 16);
+      return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255] as const;
+    };
+    const setColours = () => {
+      gl.uniform3fv(gl.getUniformLocation(prog, 'bg'), hex('--paper'));
+      gl.uniform3fv(gl.getUniformLocation(prog, 'ink'), hex('--ink'));
+      gl.uniform3fv(gl.getUniformLocation(prog, 'navy'), hex('--accent'));
+    };
+    setColours();
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { setColours(); draw(); });
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let W = 0, H = 0;
-    type P = { x: number; y: number; v: number; r: number; a: boolean };
-    let people: P[] = [];
-    const css = (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    let time = 18, visible = true, raf = 0;
     const size = () => {
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      const r = c.getBoundingClientRect(); W = r.width; H = r.height;
-      c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      people = Array.from({ length: Math.round(W / 34) }, () => ({
-        x: W * 0.42 + Math.random() * W * 0.58, y: Math.random() * H,
-        v: (Math.random() < 0.5 ? -1 : 1) * (0.15 + Math.random() * 0.45),
-        r: 2.4 + Math.random() * 2.2, a: Math.random() < 0.14,
-      }));
+      const d = Math.min(devicePixelRatio || 1, 1.5);
+      canvas.width = canvas.clientWidth * d; canvas.height = canvas.clientHeight * d;
+      gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(uRes, canvas.width, canvas.height);
     };
-    const draw = () => {
-      const paper = css('--paper');
-      ctx.fillStyle = paper; ctx.fillRect(0, 0, W, H);
-      const x0 = W * 0.42, sw = Math.max(16, H / 14);
-      ctx.fillStyle = css('--stripe');
-      for (let y = sw * 0.5; y < H; y += sw * 2) ctx.fillRect(x0, y, W - x0, sw);
-      const ink = css('--muted'), acc = css('--accent');
-      for (const p of people) {
-        if (!reduce) { p.y += p.v; if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10; }
-        ctx.fillStyle = p.a ? acc : ink; ctx.globalAlpha = p.a ? 0.9 : 0.55;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      if (!reduce) requestAnimationFrame(draw);
-    };
-    size(); addEventListener('resize', () => { size(); if (reduce) draw(); }); draw();
+    const draw = () => { gl.uniform1f(uTime, time); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+    const loop = () => { time += 0.05; draw(); raf = visible ? requestAnimationFrame(loop) : 0; };
+    size(); draw();
+    addEventListener('resize', () => { size(); draw(); });
+    if (!reduce) {
+      // Pause when the hero is scrolled out of view or the tab is hidden, to save battery.
+      new IntersectionObserver(([e]) => {
+        visible = e.isIntersecting && !document.hidden;
+        if (visible && !raf) raf = requestAnimationFrame(loop);
+      }).observe(canvas);
+      document.addEventListener('visibilitychange', () => {
+        visible = !document.hidden;
+        if (visible && !raf) raf = requestAnimationFrame(loop);
+      });
+    }
   }
 </script>
