@@ -1,0 +1,66 @@
+# Pages CMS configuration — gives you a simple editor for articles at https://app.pagescms.org
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: articles
+    label: Articles
+    type: collection
+    path: src/content/articles
+    filename: "{fields.title}.md"
+    view:
+      fields: [title, section, date, draft]
+      sort: [date]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: description
+        label: Short summary (shown on cards and in Google)
+        type: text
+        required: true
+      - name: date
+        label: Publish date
+        type: date
+        required: true
+      - name: author
+        label: Author
+        type: string
+        default: NeuroPolicy Cognita
+      - name: section
+        label: Main section
+        type: select
+        required: true
+        options:
+          values: [finance, politics, marketing, thinking]
+      - name: lenses
+        label: Also connects to (pick any other sections this essay touches)
+        type: select
+        options:
+          multiple: true
+          values: [finance, politics, marketing, thinking]
+      - name: concept
+        label: Core idea (e.g. "Veblen effect", "Loss aversion")
+        type: string
+      - name: cover
+        label: Cover image
+        type: image
+      - name: coverAlt
+        label: Cover image description (for screen readers)
+        type: string
+      - name: featured
+        label: Feature on the home page
+        type: boolean
+        default: false
+      - name: draft
+        label: Draft (hidden from the live site)
+        type: boolean
+        default: true
+      - name: body
+        label: Article
+        type: rich-text
