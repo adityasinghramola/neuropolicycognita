@@ -1,0 +1,23 @@
+---
+import { url, SECTIONS, fmtDate, readingTime, initials, type Article } from '../lib/site';
+interface Props { article: Article }
+const { article } = Astro.props;
+const d = article.data;
+const href = url(`/articles/${article.id}/`);
+---
+<article class={`feature ${d.section}`}>
+  <a class="cover" href={href} tabindex="-1" aria-hidden="true">
+    {d.cover && <img src={url(d.cover)} alt="" decoding="async" />}
+    <span class="pill-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>{readingTime(article.body)} min read</span>
+  </a>
+  <div class="body">
+    <span class="badge solid">{SECTIONS[d.section].label}</span>
+    <h2><a href={href}>{d.title}</a></h2>
+    <p>{d.description}</p>
+    <div class="byline">
+      <span class="avatar" aria-hidden="true">{initials(d.author)}</span>
+      <div><b>{d.author}</b><span>{fmtDate(d.date)}</span></div>
+    </div>
+    <a class="btn" href={href}>Read article <span aria-hidden="true">→</span></a>
+  </div>
+</article>

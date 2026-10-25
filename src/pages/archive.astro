@@ -1,31 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
-import { allArticles, url, SECTIONS, fmtDate, lensesOf } from '../lib/site';
+import ArticleBrowser from '../components/ArticleBrowser.astro';
+import { allArticles, SECTIONS, LENS_ORDER } from '../lib/site';
 const articles = await allArticles();
+const list = articles.map((article) => ({ article, tags: [article.data.section] }));
+const filters = LENS_ORDER.map((k) => ({ key: k, label: SECTIONS[k].label }));
 ---
 <Base title="All essays" description="Every essay published on NeuroPolicy Cognita.">
   <div class="wrap">
     <header class="page-head">
-      <span class="label">Archive</span>
+      <span class="badge solid">Archive</span>
       <h1>All essays</h1>
       <p class="lede">{articles.length} {articles.length === 1 ? 'essay' : 'essays'} across finance, politics, marketing and the mind.</p>
     </header>
-    <ol class="list">
-      {articles.map((a) => (
-        <li class={a.data.section}>
-          <span class="label date">{fmtDate(a.data.date)}</span>
-          <a href={url(`/articles/${a.id}/`)}><h2>{a.data.title}</h2></a>
-          <div class="chips">{lensesOf(a).map((l, i) => <span class={`chip ${l} ${i === 0 ? 'primary' : ''}`}>{SECTIONS[l].label}</span>)}</div>
-        </li>
-      ))}
-    </ol>
+    <ArticleBrowser articles={list} filters={filters} />
   </div>
 </Base>
 <style>
-  .list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
-  .list li{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:20px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--line)}
-  .list a{text-decoration:none}
-  .list h2{font-size:1.5rem}
-  .list a:hover h2{color:var(--c)}
-  @media (max-width:700px){.list li{grid-template-columns:1fr;gap:8px}}
+  .page-head{border-bottom:0;margin-bottom:8px}
 </style>

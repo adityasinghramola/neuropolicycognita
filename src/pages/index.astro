@@ -1,12 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import ArticleCard from '../components/ArticleCard.astro';
+import FeaturedArticle from '../components/FeaturedArticle.astro';
 import LensMap from '../components/LensMap.astro';
 import { allArticles, url, SECTIONS } from '../lib/site';
 
 const articles = await allArticles();
 const lead = articles.find((a) => a.data.featured) ?? articles[0];
-const latest = lead ? [lead, ...articles.filter((a) => a !== lead).slice(0, 2)] : [];
+const more = articles.filter((a) => a !== lead).slice(0, 3);
 const pillars = (['politics', 'marketing', 'finance'] as const);
 const names: Record<string, string> = { politics: 'Political Thought', marketing: 'Marketing Strategy', finance: 'Financial Analysis' };
 const icons: Record<string, string> = {
@@ -44,8 +45,9 @@ const icons: Record<string, string> = {
         <h2>Latest essays</h2>
         <a class="label" href={url('/archive/')}>All essays →</a>
       </div>
-      <div class="cards lead">
-        {latest.map((a) => <ArticleCard article={a} />)}
+      {lead && <FeaturedArticle article={lead} />}
+      <div class="cards">
+        {more.map((a) => <ArticleCard article={a} />)}
       </div>
     </section>
 
