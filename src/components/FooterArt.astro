@@ -1,0 +1,118 @@
+---
+// Interactive footer: the name "NeuroPolicy Cognita" drawn as a crowd of dots.
+// Dots scatter away from the cursor (or a finger) and drift back into place,
+// with the ones nearest the pointer lighting up in navy.
+---
+<div class="footer-art">
+  <canvas id="crowdMark" role="img" aria-label="NeuroPolicy Cognita written in dots that scatter as you move over them"></canvas>
+  <p class="hint label">Move across the name</p>
+</div>
+
+<style>
+  .footer-art{position:relative;height:clamp(180px,26vw,300px);border-top:1px solid var(--line);cursor:crosshair;touch-action:pan-y}
+  #crowdMark{display:block;width:100%;height:100%}
+  .hint{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:12px;margin:0;opacity:.7;pointer-events:none}
+  @media (hover:none){.hint{display:none}}
+</style>
+
+<script>
+  const canvas = document.getElementById('crowdMark') as HTMLCanvasElement | null;
+  const ctx = canvas?.getContext('2d');
+  if (canvas && ctx) {
+    type Dot = { hx: number; hy: number; x: number; y: number; vx: number; vy: number; glow: number };
+    let dots: Dot[] = [];
+    let W = 0, H = 0, step = 4, radius = 90, raf = 0, visible = false, settled = false;
+    const pointer = { x: -9999, y: -9999, active: false };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const css = (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+    const build = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const r = canvas.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Draw the wordmark off-screen, then sample it into dots.
+      const off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      const o = off.getContext('2d')!;
+      const twoLines = W < 640;
+      const lines = twoLines ? ['NeuroPolicy', 'Cognita'] : ['NeuroPolicy Cognita'];
+      const family = css('--display') || 'Georgia, serif';
+      let size = H * (twoLines ? 0.38 : 0.62);
+      o.font = `${size}px ${family}`;
+      const widest = Math.max(...lines.map((l) => o.measureText(l).width));
+      size = Math.min(size, size * (W * 0.9) / widest);
+      o.font = `${size}px ${family}`;
+      o.textAlign = 'center'; o.textBaseline = 'middle'; o.fillStyle = '#000';
+      const lh = size * 1.0;
+      lines.forEach((l, i) => o.fillText(l, W / 2, H / 2 + (i - (lines.length - 1) / 2) * lh));
+
+      step = W < 640 ? 3 : 4;
+      radius = W < 640 ? 60 : 90;
+      const data = o.getImageData(0, 0, W, H).data;
+      dots = [];
+      for (let y = 0; y < H; y += step) {
+        for (let x = 0; x < W; x += step) {
+          if (data[(y * W + x) * 4 + 3] > 128) dots.push({ hx: x, hy: y, x, y, vx: 0, vy: 0, glow: 0 });
+        }
+      }
+      settled = false;
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      const ink = css('--ink'), navy = css('--accent');
+      const s = step * 0.42;
+      ctx.fillStyle = ink;
+      for (const d of dots) if (d.glow < 0.15) ctx.fillRect(d.x - s, d.y - s, s * 2, s * 2);
+      ctx.fillStyle = navy;
+      for (const d of dots) if (d.glow >= 0.15) {
+        const g = s * (1 + d.glow * 0.6);
+        ctx.fillRect(d.x - g, d.y - g, g * 2, g * 2);
+      }
+    };
+
+    const tick = () => {
+      let moving = false;
+      const r2 = radius * radius;
+      for (const d of dots) {
+        if (pointer.active) {
+          const dx = d.x - pointer.x, dy = d.y - pointer.y, dist2 = dx * dx + dy * dy;
+          if (dist2 < r2) {
+            const dist = Math.sqrt(dist2) || 1, force = (1 - dist / radius) * 6;
+            d.vx += (dx / dist) * force; d.vy += (dy / dist) * force;
+            d.glow = Math.min(1, d.glow + 0.25);
+          }
+        }
+        d.vx += (d.hx - d.x) * 0.06; d.vy += (d.hy - d.y) * 0.06;
+        d.vx *= 0.82; d.vy *= 0.82;
+        d.x += d.vx; d.y += d.vy;
+        d.glow *= 0.94;
+        if (Math.abs(d.vx) + Math.abs(d.vy) > 0.05 || d.glow > 0.02) moving = true;
+      }
+      draw();
+      settled = !moving && !pointer.active;
+      raf = visible && !settled ? requestAnimationFrame(tick) : 0;
+    };
+    const wake = () => { if (!raf && visible && !reduce) raf = requestAnimationFrame(tick); };
+
+    const move = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; pointer.active = true;
+      settled = false; wake();
+    };
+    canvas.addEventListener('pointermove', move);
+    canvas.addEventListener('pointerdown', move);
+    canvas.addEventListener('pointerleave', () => { pointer.active = false; wake(); });
+    canvas.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') { pointer.active = false; wake(); } });
+
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) wake(); }).observe(canvas);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+    let resizeTimer = 0;
+    addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = window.setTimeout(() => { build(); draw(); }, 150); });
+
+    document.fonts.ready.then(() => { build(); draw(); });
+  }
+</script>

@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { url, SECTIONS, LENS_ORDER } from '../lib/site';
+import FooterArt from '../components/FooterArt.astro';
 
 interface Props { title?: string; description?: string; image?: string; active?: string }
 const { title, description = 'A thought space for ideas that shape the way we think, decide and act: behavioural finance, politics, policy and marketing.', image, active } = Astro.props;
@@ -45,6 +46,7 @@ const nav = [
 
   <main><slot /></main>
 
+  <FooterArt />
   <footer class="site-footer">
     <div class="wrap">
       <span>© {new Date().getFullYear()} NeuroPolicy Cognita · Strategic insights for a complex world</span>
