@@ -1,0 +1,101 @@
+---
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { render } from 'astro:content';
+import { allArticles, related, url, SECTIONS, fmtDate, readingTime, lensesOf } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const items = await allArticles();
+  return items.map((a) => ({ params: { slug: a.id }, props: { article: a } }));
+}
+const { article } = Astro.props;
+const d = article.data;
+const { Content, headings } = await render(article);
+const items = await allArticles();
+const rel = related(items, article);
+const toc = headings.filter((h) => h.depth === 2);
+const ls = lensesOf(article);
+---
+<Base title={d.title} description={d.description} image={d.cover} active={d.section}>
+  <article class={d.section}>
+    <header class="wrap a-head">
+      <div class="chips">
+        {ls.map((l, i) => <a class={`chip ${l} ${i === 0 ? 'primary' : ''}`} href={url(`/${l}/`)}>{SECTIONS[l].label}</a>)}
+      </div>
+      <h1>{d.title}</h1>
+      <p class="dek">{d.description}</p>
+      <p class="label">By {d.author} · {fmtDate(d.date)} · {readingTime(article.body)} min read</p>
+    </header>
+
+    {d.cover && (
+      <figure class="wrap a-cover">
+        <img src={url(d.cover)} alt={d.coverAlt ?? ''} />
+      </figure>
+    )}
+
+    <div class="wrap a-body">
+      <aside class="rail">
+        {d.concept && (
+          <div class="concept">
+            <span class="label">Core idea</span>
+            <b>{d.concept}</b>
+          </div>
+        )}
+        <div>
+          <span class="label">Read through</span>
+          <ul class="lens-list">
+            {ls.map((l) => <li class={l}><a href={url(`/${l}/`)}>{SECTIONS[l].label}</a></li>)}
+          </ul>
+        </div>
+        {toc.length > 1 && (
+          <nav aria-label="In this essay">
+            <span class="label">In this essay</span>
+            <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+          </nav>
+        )}
+      </aside>
+      <div class="prose"><Content /></div>
+    </div>
+  </article>
+
+  {rel.length > 0 && (
+    <section class="wrap more">
+      <div class="section-head">
+        <h2>Where this connects</h2>
+        <span class="label">Essays that share a lens with this one</span>
+      </div>
+      <div class="cards">{rel.map((r) => <ArticleCard article={r.a} showDesc={false} />)}</div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .a-head{padding-block:clamp(48px,8vw,96px) 32px;display:grid;gap:20px;max-width:900px}
+  .a-head h1{font-size:clamp(2.2rem,5.5vw,4rem);letter-spacing:-.01em}
+  .dek{font-size:var(--s3);color:var(--muted);max-width:56ch;line-height:1.5}
+  .a-cover{margin-top:0;margin-bottom:clamp(40px,6vw,72px)}
+  .a-cover img{width:100%;max-height:640px;object-fit:cover}
+  .a-body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(24px,6vw,80px);align-items:start}
+  .rail{position:sticky;top:96px;display:grid;gap:28px;border-top:3px solid var(--c);padding-top:16px}
+  .concept b{display:block;font-family:var(--display);font-weight:400;font-size:1.4rem;line-height:1.2;margin-top:6px;color:var(--c)}
+  .lens-list,.rail ol{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;font-size:.92rem}
+  .lens-list li{border-left:3px solid var(--c);padding-left:10px}
+  .rail a{text-decoration:none;color:var(--muted)}
+  .rail a:hover{color:var(--ink)}
+  .prose{font-family:var(--serif);font-size:1.15rem;line-height:1.75;max-width:66ch;min-width:0}
+  .prose :global(> * + *){margin-top:1.1em}
+  .prose :global(h2){font-size:var(--s4);margin-top:1.8em;scroll-margin-top:96px}
+  .prose :global(h3){font-size:1.4rem;margin-top:1.5em}
+  .prose :global(blockquote){margin:1.6em 0;padding:0 0 0 22px;border-left:3px solid var(--c);font-family:var(--display);font-size:1.4rem;line-height:1.35;color:var(--ink)}
+  .prose :global(blockquote p){margin:0}
+  .prose :global(blockquote strong){font-weight:400;color:var(--c)}
+  .prose :global(a){color:var(--c);text-underline-offset:3px}
+  .prose :global(ul),.prose :global(ol){padding-left:1.3em}
+  .prose :global(img){margin-block:1.6em}
+  .prose :global(code){font-family:var(--mono);font-size:.85em;background:var(--stripe);padding:1px 5px}
+  .prose :global(table){border-collapse:collapse;width:100%;font-family:var(--body);font-size:.95rem;display:block;overflow-x:auto}
+  .prose :global(th),.prose :global(td){border-bottom:1px solid var(--line);padding:8px 10px;text-align:left}
+  .prose :global(> p:first-of-type::first-letter){font-family:var(--display);float:left;font-size:3.4em;line-height:.85;padding:6px 10px 0 0;color:var(--c)}
+  .more{margin-top:clamp(72px,10vw,120px)}
+  @media (max-width:860px){.a-body{grid-template-columns:1fr}.rail{position:static;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}}
+</style>

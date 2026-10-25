@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import { url, SECTIONS, LENS_ORDER } from '../lib/site';
+
+interface Props { title?: string; description?: string; image?: string; active?: string }
+const { title, description = 'A thought space for ideas that shape the way we think, decide and act: behavioural finance, politics, policy and marketing.', image, active } = Astro.props;
+const fullTitle = title ? `${title} · NeuroPolicy Cognita` : 'NeuroPolicy Cognita — Strategic insights for a complex world';
+const ogImage = image ? new URL(url(image), Astro.site).href : undefined;
+const nav = [
+  ...LENS_ORDER.map((k) => ({ key: k, label: SECTIONS[k].label, href: url(`/${k}/`) })),
+  { key: 'about', label: 'About', href: url('/about/') },
+  { key: 'contact', label: 'Contact', href: url('/contact/') },
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  <meta property="og:title" content={title ?? 'NeuroPolicy Cognita'} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content={image ? 'article' : 'website'} />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+  <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href={url('/')} aria-label="NeuroPolicy Cognita, home"><span class="mark" aria-hidden="true">NC</span><b>NeuroPolicy <span>Cognita</span></b></a>
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="site-nav" id="siteNav" aria-label="Main">
+        <ul>
+          {nav.map((n) => <li><a href={n.href} aria-current={active === n.key ? 'page' : undefined}>{n.label}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main><slot /></main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© {new Date().getFullYear()} NeuroPolicy Cognita · Strategic insights for a complex world</span>
+      <nav aria-label="Footer">{nav.map((n) => <a href={n.href}>{n.label}</a>)}</nav>
+    </div>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('menuBtn');
+    const nav = document.getElementById('siteNav');
+    btn?.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      nav?.classList.toggle('open', open);
+    });
+  </script>
+</body>
+</html>

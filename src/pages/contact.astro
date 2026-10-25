@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+// Get a free access key at https://web3forms.com (enter the email you want messages sent to),
+// then paste it below. Until then the form shows a friendly message instead of sending.
+const WEB3FORMS_KEY = 'PASTE-YOUR-WEB3FORMS-ACCESS-KEY-HERE';
+---
+<Base title="Contact" description="Pitch an essay, propose a collaboration or ask a question." active="contact">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="label">Contact</span>
+      <h1>Pitch an idea or say hello</h1>
+      <p class="lede">Questions, collaborations and essay pitches are all welcome.</p>
+    </header>
+    <form id="contactForm" data-key={WEB3FORMS_KEY}>
+      <input type="hidden" name="subject" value="New message from NeuroPolicy Cognita" />
+      <input type="checkbox" name="botcheck" class="sr-only" tabindex="-1" autocomplete="off" />
+      <label for="cName">Name<input id="cName" name="name" autocomplete="name" required /></label>
+      <label for="cEmail">Email<input id="cEmail" name="email" type="email" autocomplete="email" required /></label>
+      <label for="cTopic">Topic
+        <select id="cTopic" name="topic"><option>Essay pitch</option><option>Collaboration</option><option>General question</option></select>
+      </label>
+      <label for="cMsg">Message<textarea id="cMsg" name="message" required placeholder="A few lines on your idea or question"></textarea></label>
+      <div><button class="btn" type="submit">Send message</button></div>
+      <p class="status" id="formStatus" role="status"></p>
+    </form>
+  </div>
+</Base>
+<style>
+  form{display:grid;gap:18px;max-width:560px}
+  label{display:grid;gap:6px;font-size:.9rem;font-weight:500}
+  input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:12px 14px;border-radius:0;width:100%}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+  textarea{min-height:160px;resize:vertical}
+  .status{font-family:var(--mono);font-size:var(--s1);color:var(--accent-ink);min-height:1.4em}
+</style>
+<script>
+  const form = document.getElementById('contactForm') as HTMLFormElement;
+  const status = document.getElementById('formStatus')!;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    const key = form.dataset.key || '';
+    if (key.startsWith('PASTE')) { status.textContent = 'The contact form is not connected yet. Please check back soon.'; return; }
+    status.textContent = 'Sending…';
+    const data = Object.fromEntries(new FormData(form));
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ ...data, access_key: key }),
+      });
+      const json = await res.json();
+      if (json.success) { status.textContent = 'Thanks, your message has been sent.'; form.reset(); }
+      else status.textContent = 'Your message could not be sent. Please try again in a minute.';
+    } catch { status.textContent = 'No connection. Check your internet and try again.'; }
+  });
+</script>

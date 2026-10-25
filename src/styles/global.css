@@ -1,0 +1,99 @@
+/* NeuroPolicy Cognita — one editorial column, paper-and-ink palette,
+   each lens (finance / politics / marketing / thinking) has its own ink colour. */
+:root{
+  --paper:#eef1f4; --surface:#ffffff; --ink:#141c2e; --muted:#5a6377; --line:#cdd3dc;
+  --accent:#b8862b; --accent-ink:#7a5614; --stripe:#dfe4ea;
+  --l-finance:#a87420; --l-politics:#2f5d8a; --l-marketing:#a04a32; --l-thinking:#5b4f8f;
+  --display:"Gloock", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif:"Literata", Georgia, serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --s1:.8125rem; --s3:1.25rem; --s4:1.75rem; --s5:clamp(2.2rem,5vw,3.4rem); --s6:clamp(2.6rem,7.5vw,5.4rem);
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#0f1420; --surface:#161d2c; --ink:#e7ebf2; --muted:#9aa3b5; --line:#2a3346;
+  --accent:#d9a748; --accent-ink:#e7bd6a; --stripe:#1a2233;
+  --l-finance:#e0b25a; --l-politics:#7fa8d6; --l-marketing:#e08a6e; --l-thinking:#a99ae0;
+  color-scheme:dark}}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.08;text-wrap:balance;margin:0}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.label{font-family:var(--mono);font-size:var(--s1);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px;position:relative}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.mark{width:34px;height:34px;border:1.5px solid var(--ink);display:grid;place-items:center;font-family:var(--display);font-size:1rem;letter-spacing:-.04em}
+.brand b{font-family:var(--display);font-weight:400;font-size:1.15rem}
+.brand b span{color:var(--accent-ink)}
+.site-nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.site-nav a{display:block;text-decoration:none;font-size:.9rem;padding:6px 10px;color:var(--muted)}
+.site-nav a:hover{color:var(--ink)}
+.site-nav a[aria-current="page"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.menu-btn{display:none;background:none;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:.85rem;padding:6px 12px;cursor:pointer}
+@media (max-width:840px){
+  .menu-btn{display:block}
+  .site-nav{display:none;position:absolute;left:0;right:0;top:100%;background:var(--paper);border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+  .site-nav.open{display:block}
+  .site-nav ul{flex-direction:column}
+  .site-nav a{padding:10px 0;font-size:1rem}
+  .site-nav a[aria-current="page"]{box-shadow:none;color:var(--accent-ink)}
+}
+
+/* buttons */
+.btn{display:inline-block;text-decoration:none;font-weight:600;font-size:.95rem;padding:12px 20px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;font-family:var(--body)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#141c2e}
+
+/* lens chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.finance{--c:var(--l-finance)} .politics{--c:var(--l-politics)} .marketing{--c:var(--l-marketing)} .thinking{--c:var(--l-thinking)}
+.chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;padding:3px 8px 2px;border:1px solid var(--c,var(--muted));color:var(--c,var(--muted))}
+.chip.primary{background:var(--c);border-color:var(--c);color:var(--paper)}
+a.chip:hover{background:var(--c);color:var(--paper)}
+
+/* section heads */
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;border-top:1px solid var(--ink);padding-top:18px;margin-bottom:28px}
+.section-head h2{font-size:var(--s4)}
+
+/* article cards */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 28px}
+.cards.lead{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.card{display:grid;gap:12px;align-content:start;min-width:0}
+.card a.cover{display:block;overflow:hidden;background:var(--stripe);aspect-ratio:3/2}
+.card a.cover img{width:100%;height:100%;object-fit:cover;filter:grayscale(.15);transition:transform .5s ease,filter .5s}
+.card:hover a.cover img{transform:scale(1.03);filter:none}
+.card h3{font-size:1.45rem}
+.card h3 a{text-decoration:none}
+.card h3 a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.card p{color:var(--muted);font-size:.95rem}
+.card .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cards.lead .card:first-child{grid-row:span 2}
+.cards.lead .card:first-child h3{font-size:var(--s4)}
+@media (max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.cards.lead{grid-template-columns:1fr}.cards.lead .card:first-child{grid-row:auto}}
+@media (max-width:600px){.cards{grid-template-columns:1fr}}
+
+/* page heads */
+.page-head{padding-block:clamp(56px,9vw,104px) 40px;border-bottom:1px solid var(--line);margin-bottom:48px;display:grid;gap:18px}
+.page-head h1{font-size:var(--s6);max-width:16ch}
+.page-head .lede{font-size:var(--s3);color:var(--muted);max-width:52ch;line-height:1.5}
+
+main{padding-bottom:96px}
+
+/* footer */
+.site-footer{border-top:1px solid var(--line);padding-block:40px}
+.site-footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font-size:.875rem;color:var(--muted)}
+.site-footer nav{display:flex;gap:16px;flex-wrap:wrap}
+.site-footer a{text-decoration:none}
+.site-footer a:hover{color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}

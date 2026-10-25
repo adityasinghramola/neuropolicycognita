@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { allArticles, inSection, url, SECTIONS, LENS_ORDER, type Lens } from '../lib/site';
+
+export function getStaticPaths() {
+  return LENS_ORDER.map((section) => ({ params: { section } }));
+}
+const section = Astro.params.section as Lens;
+const s = SECTIONS[section];
+const { home, crossing } = inSection(await allArticles(), section);
+---
+<Base title={s.label} description={s.lede} active={section}>
+  <div class={`wrap ${section}`}>
+    <header class="page-head">
+      <span class="label tag">{s.label}</span>
+      <h1>{s.title}</h1>
+      <p class="lede">{s.lede}</p>
+    </header>
+
+    {home.length > 0 ? (
+      <div class="cards lead">{home.map((a) => <ArticleCard article={a} />)}</div>
+    ) : (
+      <div class="empty">
+        <h2>First essays coming soon</h2>
+        <p>Questions this section will take on:</p>
+        <ul>{s.questions.map((q) => <li>{q}</li>)}</ul>
+        <a class="btn" href={url('/contact/')}>Pitch an essay</a>
+      </div>
+    )}
+
+    {crossing.length > 0 && (
+      <section class="crossing">
+        <div class="section-head">
+          <h2>Crossing over</h2>
+          <span class="label">Essays from other sections that use a {s.label.toLowerCase()} lens</span>
+        </div>
+        <div class="cards">{crossing.map((a) => <ArticleCard article={a} showDesc={false} />)}</div>
+      </section>
+    )}
+  </div>
+</Base>
+
+<style>
+  .tag{color:var(--c)}
+  .page-head{border-bottom-color:var(--c)}
+  .crossing{margin-top:clamp(64px,9vw,104px)}
+  .empty{background:var(--surface);border:1px solid var(--line);padding:clamp(24px,4vw,40px);display:grid;gap:14px;max-width:640px}
+  .empty h2{font-size:var(--s4)}
+  .empty ul{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:6px}
+  .empty .btn{justify-self:start;margin-top:8px}
+</style>

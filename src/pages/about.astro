@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+---
+<Base title="About" description="NeuroPolicy Cognita sits at the intersection of behavioural science, public policy and markets." active="about">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="label">About</span>
+      <h1>Where disciplines meet decisions</h1>
+      <p class="lede">NeuroPolicy Cognita sits at the intersection of behavioural science, public policy and markets.</p>
+    </header>
+    <div class="about">
+      <div class="prose">
+        <p>Most big outcomes, whether a market crash, an election swing or a brand's rise, come down to millions of small human decisions. NeuroPolicy Cognita exists to study those decisions across fields that rarely talk to each other.</p>
+        <p>Finance explains how people price risk. Politics explains how societies choose rules. Marketing explains how preferences are shaped. Read together, they give a sharper picture of why people act the way they do, and how institutions can work with that behaviour instead of against it.</p>
+        <p>That is why every essay here is tagged with more than one lens. A piece on luxury pricing is also a piece on status psychology; a piece on geopolitics is also a piece on trade and capital. Follow the tags and you will find the connections.</p>
+        <h2>Open to contributors</h2>
+        <p>This is not a single-author blog. Students, practitioners and researchers are welcome to pitch essays, case studies and short analyses. If you have a well-argued idea about how people decide, it belongs here.</p>
+        <p><a class="btn" href={url('/contact/')}>Pitch an essay</a></p>
+      </div>
+      <div class="principles">
+        <div><b>Evidence first</b><p>Claims are tied to data, studies or cases the reader can check.</p></div>
+        <div><b>Across fields</b><p>Every piece borrows at least one idea from outside its home discipline.</p></div>
+        <div><b>Readable</b><p>Rigour without jargon. If it cannot be explained clearly, it is not ready.</p></div>
+      </div>
+    </div>
+  </div>
+</Base>
+<style>
+  .about{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:clamp(32px,6vw,96px);align-items:start}
+  .prose{display:grid;gap:18px;font-family:var(--serif);font-size:1.12rem;line-height:1.75;max-width:62ch}
+  .prose h2{font-size:var(--s4);margin-top:20px}
+  .prose .btn{font-family:var(--body)}
+  .principles{display:grid;gap:28px}
+  .principles div{border-top:2px solid var(--accent);padding-top:14px}
+  .principles b{display:block;font-family:var(--display);font-weight:400;font-size:1.35rem;margin-bottom:6px}
+  .principles p{color:var(--muted);font-size:.95rem}
+  @media (max-width:820px){.about{grid-template-columns:1fr}}
+</style>

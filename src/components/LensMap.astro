@@ -1,0 +1,82 @@
+---
+// The "interconnection map": each article sits between the lenses it draws on,
+// pulled hardest towards its home section. Lines show every lens it touches.
+import { url, SECTIONS, LENS_ORDER, lensesOf, type Article, type Lens } from '../lib/site';
+interface Props { articles: Article[] }
+const { articles } = Astro.props;
+
+const W = 720, H = 400;
+const node: Record<Lens, { x: number; y: number; anchor: string; dx: number; dy: number }> = {
+  finance:   { x: 140, y: 90,  anchor: 'start', dx: -40, dy: -26 },
+  politics:  { x: 580, y: 90,  anchor: 'end',   dx: 40,  dy: -26 },
+  marketing: { x: 140, y: 310, anchor: 'start', dx: -40, dy: 40 },
+  thinking:  { x: 580, y: 310, anchor: 'end',   dx: 40,  dy: 40 },
+};
+
+const placed = articles.map((a, i) => {
+  const ls = lensesOf(a);
+  let x = 0, y = 0, w = 0;
+  ls.forEach((l, j) => { const k = j === 0 ? 2.2 : 1; x += node[l].x * k; y += node[l].y * k; w += k; });
+  x /= w; y /= w;
+  // spread articles that land on the same spot
+  const ang = i * 2.4;
+  x += Math.cos(ang) * 18; y += Math.sin(ang) * 14;
+  return { a, ls, x, y };
+});
+---
+<figure class="lensmap">
+  <div class="lensmap-scroll">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="lmTitle">
+      <title id="lmTitle">Map of how articles connect finance, politics, marketing and thinking</title>
+      {LENS_ORDER.map((l, i) => LENS_ORDER.slice(i + 1).map((m) => (
+        <line x1={node[l].x} y1={node[l].y} x2={node[m].x} y2={node[m].y} class="frame" />
+      )))}
+      {placed.map((p) => p.ls.map((l, j) => (
+        <line x1={p.x} y1={p.y} x2={node[l].x} y2={node[l].y} class={`tie ${l} ${j === 0 ? 'home' : ''}`} />
+      )))}
+      {LENS_ORDER.map((l) => (
+        <a href={url(`/${l}/`)} class={`lensnode ${l}`}>
+          <circle cx={node[l].x} cy={node[l].y} r="14" />
+          <text x={node[l].x + node[l].dx} y={node[l].y + node[l].dy} text-anchor={node[l].anchor}>{SECTIONS[l].label}</text>
+        </a>
+      ))}
+      {placed.map((p) => (
+        <a href={url(`/articles/${p.a.id}/`)} class={`dot ${p.a.data.section}`}>
+          <title>{p.a.data.title}</title>
+          <circle cx={p.x} cy={p.y} r="7" />
+          <circle cx={p.x} cy={p.y} r="16" class="halo" />
+        </a>
+      ))}
+    </svg>
+  </div>
+  <figcaption>
+    <ol>
+      {placed.map((p) => (
+        <li class={p.a.data.section}>
+          <a href={url(`/articles/${p.a.id}/`)}>{p.a.data.title}</a>
+          <span class="label">{p.ls.map((l) => SECTIONS[l].label).join(' + ')}</span>
+        </li>
+      ))}
+    </ol>
+  </figcaption>
+</figure>
+
+<style>
+  .lensmap{margin:0;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:center;background:var(--surface);border:1px solid var(--line);padding:clamp(16px,3vw,32px)}
+  .lensmap-scroll{overflow-x:auto;min-width:0}
+  svg{width:100%;min-width:420px;height:auto;display:block}
+  .frame{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5}
+  .tie{stroke:var(--c);stroke-width:1;opacity:.45}
+  .tie.home{stroke-width:2;opacity:.9}
+  .lensnode circle{fill:var(--surface);stroke:var(--c);stroke-width:2.5}
+  .lensnode text{fill:var(--c);font-family:var(--mono);font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+  .lensnode:hover circle{fill:var(--c)}
+  .dot circle{fill:var(--c)}
+  .dot .halo{fill:none;stroke:var(--c);stroke-width:1;opacity:0;transition:opacity .2s}
+  .dot:hover .halo,.dot:focus-visible .halo{opacity:1}
+  figcaption ol{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+  figcaption li{border-left:3px solid var(--c);padding-left:12px;display:grid;gap:2px;min-width:0}
+  figcaption a{font-family:var(--display);font-size:1.1rem;line-height:1.25;text-decoration:none}
+  figcaption a:hover{text-decoration:underline;text-underline-offset:3px}
+  @media (max-width:820px){.lensmap{grid-template-columns:1fr}}
+</style>

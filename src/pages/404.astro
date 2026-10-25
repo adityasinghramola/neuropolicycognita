@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+---
+<Base title="Page not found">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="label">404</span>
+      <h1>This page took a different turn</h1>
+      <p class="lede">The link may be old or mistyped. Start from the home page or browse every essay.</p>
+      <p style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href={url('/')}>Home</a><a class="btn ghost" href={url('/archive/')}>All essays</a></p>
+    </header>
+  </div>
+</Base>

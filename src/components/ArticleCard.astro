@@ -1,0 +1,21 @@
+---
+import { url, SECTIONS, fmtDate, readingTime, type Article } from '../lib/site';
+interface Props { article: Article; showDesc?: boolean }
+const { article, showDesc = true } = Astro.props;
+const d = article.data;
+const href = url(`/articles/${article.id}/`);
+---
+<article class="card">
+  {d.cover && (
+    <a class="cover" href={href} tabindex="-1" aria-hidden="true">
+      <img src={url(d.cover)} alt="" loading="lazy" decoding="async" />
+    </a>
+  )}
+  <div class="meta">
+    <a class={`chip primary ${d.section}`} href={url(`/${d.section}/`)}>{SECTIONS[d.section].label}</a>
+    {d.lenses.filter((l) => l !== d.section).map((l) => <span class={`chip ${l}`}>{SECTIONS[l].label}</span>)}
+  </div>
+  <h3><a href={href}>{d.title}</a></h3>
+  {showDesc && <p>{d.description}</p>}
+  <span class="label">{fmtDate(d.date)} · {readingTime(article.body)} min read</span>
+</article>
