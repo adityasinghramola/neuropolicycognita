@@ -22,5 +22,9 @@ Put **two stars** around text for bold and *one star* for italics.
 
 > A line starting with `>` becomes a pull quote.
 
+To cite a source, put a footnote marker after the sentence, like this.[^1] Hovering the number shows the note.
+
 - Lines starting with a dash
 - become a bullet list
+
+[^1]: Thorstein Veblen, *The Theory of the Leisure Class* (1899). Footnotes are written at the end of the article like this line.

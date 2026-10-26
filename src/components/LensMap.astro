@@ -24,7 +24,7 @@ const placed = articles.map((a, i) => {
   return { a, ls, x, y };
 });
 ---
-<figure class="lensmap">
+<figure class="lensmap" id="lensmap">
   <div class="lensmap-scroll">
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="lmTitle">
       <title id="lmTitle">Map of how articles connect finance, politics, marketing and thinking</title>
@@ -32,7 +32,7 @@ const placed = articles.map((a, i) => {
         <line x1={node[l].x} y1={node[l].y} x2={node[m].x} y2={node[m].y} class="frame" />
       )))}
       {placed.map((p) => p.ls.map((l, j) => (
-        <line x1={p.x} y1={p.y} x2={node[l].x} y2={node[l].y} class={`tie ${l} ${j === 0 ? 'home' : ''}`} />
+        <line x1={p.x} y1={p.y} x2={node[l].x} y2={node[l].y} class={`tie ${l} ${j === 0 ? 'home' : ''}`} data-a={p.a.id} pathLength="1" />
       )))}
       {LENS_ORDER.map((l) => (
         <a href={url(`/${l}/`)} class={`lensnode ${l}`}>
@@ -41,7 +41,7 @@ const placed = articles.map((a, i) => {
         </a>
       ))}
       {placed.map((p) => (
-        <a href={url(`/articles/${p.a.id}/`)} class={`dot ${p.a.data.section}`}>
+        <a href={url(`/articles/${p.a.id}/`)} class={`dot ${p.a.data.section}`} data-a={p.a.id}>
           <title>{p.a.data.title}</title>
           <circle cx={p.x} cy={p.y} r="7" />
           <circle cx={p.x} cy={p.y} r="16" class="halo" />
@@ -52,7 +52,7 @@ const placed = articles.map((a, i) => {
   <figcaption>
     <ol>
       {placed.map((p) => (
-        <li class={p.a.data.section}>
+        <li class={p.a.data.section} data-a={p.a.id}>
           <a href={url(`/articles/${p.a.id}/`)}>{p.a.data.title}</a>
           <span class="label">{p.ls.map((l) => SECTIONS[l].label).join(' + ')}</span>
         </li>
@@ -79,4 +79,41 @@ const placed = articles.map((a, i) => {
   figcaption a{font-family:var(--display);font-size:1.1rem;line-height:1.25;text-decoration:none}
   figcaption a:hover{text-decoration:underline;text-underline-offset:3px}
   @media (max-width:820px){.lensmap{grid-template-columns:1fr}}
+  /* Live map: ties draw in when the map scrolls into view; hovering an essay lights its connections. */
+  .tie{stroke-dasharray:1;stroke-dashoffset:0;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1),opacity .3s,stroke-width .3s}
+  .lensmap.pending .tie{stroke-dashoffset:1}
+  .lensmap.pending .dot circle{opacity:0}
+  .dot circle{transition:opacity .5s .6s,r .25s}
+  .lensmap.focus .tie{opacity:.08}
+  .lensmap.focus .tie.lit{opacity:1;stroke-width:2.5}
+  .lensmap.focus .dot{opacity:.25}
+  .lensmap.focus .dot.lit{opacity:1}
+  .lensmap.focus .dot.lit circle:first-of-type{r:9}
+  .lensmap.focus figcaption li{opacity:.4}
+  .lensmap.focus figcaption li.lit{opacity:1}
+  .dot,figcaption li{transition:opacity .3s}
+  @media (prefers-reduced-motion:reduce){.tie,.dot circle{transition:none}}
 </style>
+
+<script>
+  const map = document.getElementById('lensmap');
+  if (map) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && 'IntersectionObserver' in window && map.getBoundingClientRect().top > innerHeight * 0.9) {
+      map.classList.add('pending');
+      map.querySelectorAll<SVGLineElement>('.tie').forEach((t, i) => t.style.transitionDelay = `${i * 0.06}s`);
+      const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { map.classList.remove('pending'); io.disconnect(); } }, { threshold: 0.35 });
+      io.observe(map);
+    }
+    const light = (id: string | null) => {
+      map.classList.toggle('focus', !!id);
+      map.querySelectorAll<HTMLElement | SVGElement>('[data-a]').forEach((el) => el.classList.toggle('lit', el.dataset.a === id));
+    };
+    map.querySelectorAll<HTMLElement | SVGElement>('.dot,figcaption li').forEach((el) => {
+      el.addEventListener('pointerenter', () => light(el.dataset.a ?? null));
+      el.addEventListener('focusin', () => light(el.dataset.a ?? null));
+      el.addEventListener('pointerleave', () => light(null));
+      el.addEventListener('focusout', () => light(null));
+    });
+  }
+</script>

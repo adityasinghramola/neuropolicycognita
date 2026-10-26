@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import { url, SECTIONS, LENS_ORDER } from '../lib/site';
 import FooterArt from '../components/FooterArt.astro';
+import Effects from '../components/Effects.astro';
+import Ticker from '../components/Ticker.astro';
 
 interface Props { title?: string; description?: string; image?: string; active?: string }
 const { title, description = 'A thought space for ideas that shape the way we think, decide and act: behavioural finance, politics, policy and marketing.', image, active } = Astro.props;
@@ -37,6 +39,7 @@ const nav = [
     <div class="grain"></div>
     <div class="dots"></div>
   </div>
+  <Effects />
   <header class="site-header">
     <div class="wrap bar">
       <a class="brand" href={url('/')} aria-label="NeuroPolicy Cognita, home"><span class="mark" aria-hidden="true">NC</span><b>NeuroPolicy <span>Cognita</span></b></a>
@@ -47,6 +50,7 @@ const nav = [
         </ul>
       </nav>
     </div>
+    <Ticker />
   </header>
 
   <main><slot /></main>

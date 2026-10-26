@@ -8,6 +8,14 @@ import { allArticles, url, SECTIONS } from '../lib/site';
 const articles = await allArticles();
 const lead = articles.find((a) => a.data.featured) ?? articles[0];
 const more = articles.filter((a) => a !== lead).slice(0, 3);
+const links = articles.reduce((n, a) => n + a.data.lenses.filter((l) => l !== a.data.section).length, 0);
+const authors = new Set(articles.map((a) => a.data.author)).size;
+const stats = [
+  { n: articles.length, label: articles.length === 1 ? 'Essay published' : 'Essays published' },
+  { n: 4, label: 'Lenses on decision-making' },
+  { n: links, label: 'Cross-field connections' },
+  { n: authors, label: authors === 1 ? 'Contributor' : 'Contributors' },
+];
 const pillars = (['politics', 'marketing', 'finance'] as const);
 const names: Record<string, string> = { politics: 'Political Thought', marketing: 'Marketing Strategy', finance: 'Financial Analysis' };
 const icons: Record<string, string> = {
@@ -22,7 +30,7 @@ const icons: Record<string, string> = {
     <div class="veil" aria-hidden="true"></div>
     <div class="wrap hero-inner">
       <span class="label">Behaviour · Policy · Markets</span>
-      <h1>Strategic insights for a <em>complex</em> world</h1>
+      <h1 class="reveal-head" aria-label="Strategic insights for a complex world"><span aria-hidden="true"><span class="w" style="--i:0">Strategic</span> <span class="w" style="--i:1">insights</span> <span class="w" style="--i:2">for</span> <span class="w" style="--i:3">a</span> <span class="w" style="--i:5"><em>complex</em></span> <span class="w" style="--i:4">world</span></span></h1>
       <p>A thought space for the ideas that shape the way we think, decide, and act.</p>
       <div class="hero-cta">
         <a class="btn" href="#latest">Read the latest</a>
@@ -38,6 +46,10 @@ const icons: Record<string, string> = {
         <p>NeuroPolicy Cognita is a thought space for ideas that shape the way we think, decide, and act. From behavioural finance and marketing insights to politics, policy, and broader cultural reflections, the platform blends analysis with curiosity.</p>
         <p>It is not just one voice. Contributors from diverse fields share their perspectives, creating a space where disciplines intersect and new ways of understanding emerge. Whether it is decoding decision-making, exploring societal shifts, or reflecting on everyday behaviour, NeuroPolicy Cognita is about curious minds making sense of a complex world.</p>
       </div>
+    </section>
+
+    <section class="stats" aria-label="At a glance">
+      {stats.map((st) => <div><b data-count>{st.n}</b><span class="label">{st.label}</span></div>)}
     </section>
 
     <section id="latest">
@@ -93,6 +105,15 @@ const icons: Record<string, string> = {
   .hero-inner{position:relative;width:100%;padding-block:clamp(72px,12vw,140px) clamp(56px,9vw,104px)}
   .hero h1{font-size:var(--s6);max-width:12ch;letter-spacing:-.01em}
   .hero h1 em{font-style:normal;color:var(--accent)}
+  .reveal-head .w{display:inline-block;animation:word-in .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(.15s + var(--i) * .12s)}
+  .reveal-head .w:has(em){animation-duration:1.1s}
+  @keyframes word-in{from{opacity:0;transform:translateY(.45em);filter:blur(6px)}}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin-top:clamp(56px,8vw,96px);border-top:1px solid var(--line);padding-top:28px}
+  .stats div{min-width:0}
+  .stats b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+  .stats span{display:block;margin-top:8px}
+  @media (max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (prefers-reduced-motion:reduce){.reveal-head .w{animation:none}}
   .hero p{max-width:46ch;margin-top:24px;font-size:var(--s3);color:var(--muted);line-height:1.5}
   .hero .label{margin-bottom:22px;display:block}
   .hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}

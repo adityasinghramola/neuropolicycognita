@@ -1,0 +1,42 @@
+---
+// A thin band under the header that scrolls the site's real essay topics.
+import { allArticles, url, SECTIONS } from '../lib/site';
+const items = (await allArticles()).map((a) => ({
+  href: url(`/articles/${a.id}/`),
+  label: SECTIONS[a.data.section].label,
+  text: a.data.concept ?? a.data.title,
+  section: a.data.section,
+}));
+// Repeat so the strip is wide enough to loop seamlessly.
+const loop = items.length ? Array.from({ length: Math.max(2, Math.ceil(8 / items.length)) }, () => items).flat() : [];
+---
+{loop.length > 0 && (
+  <div class="ticker" aria-label="Essay topics">
+    <div class="ticker-track">
+      {[0, 1].map((copy) => (
+        <ul aria-hidden={copy === 1 ? 'true' : undefined}>
+          {loop.map((it) => (
+            <li class={it.section}>
+              <a href={it.href} tabindex={copy === 1 ? -1 : undefined}><span class="tk-label">{it.label}</span>{it.text}</a>
+            </li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .ticker{overflow:hidden;border-bottom:1px solid var(--line);background:rgba(0,0,0,.55);backdrop-filter:blur(6px);font-size:.8rem;
+    -webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .ticker-track{display:flex;width:max-content;animation:tick 60s linear infinite}
+  .ticker:hover .ticker-track,.ticker:focus-within .ticker-track{animation-play-state:paused}
+  .ticker ul{display:flex;list-style:none;margin:0;padding:0}
+  .ticker li{padding:8px 0}
+  .ticker li::after{content:"·";color:var(--muted);padding:0 22px}
+  .ticker a{text-decoration:none;color:var(--ink);white-space:nowrap}
+  .ticker a:hover{color:var(--accent)}
+  .tk-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c);margin-right:10px}
+  @keyframes tick{to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+</style>

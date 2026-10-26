@@ -1,0 +1,206 @@
+---
+// Site-wide motion: cursor spotlight, scroll reveals, card tilt, magnetic buttons,
+// sliding nav underline, count-up numbers, footnote previews and page transitions.
+// Everything is skipped for visitors who ask for reduced motion; hover effects only run with a mouse.
+---
+<div class="spotlight" aria-hidden="true"></div>
+
+<style is:global>
+  /* Page transitions: browsers that support it crossfade between pages; others just navigate. */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root){animation:vt-out .25s ease both}
+  ::view-transition-new(root){animation:vt-in .35s ease both}
+  @keyframes vt-out{to{opacity:0}}
+  @keyframes vt-in{from{opacity:0}}
+
+  /* Spotlight: a navy glow that follows the cursor and brightens the dot grid underneath. */
+  .spotlight{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .4s;
+    background:radial-gradient(520px circle at var(--mx,50%) var(--my,50%),rgba(80,130,215,.13),transparent 60%)}
+  .spotlight::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle at 1px 1px,rgba(157,184,230,.9) 1px,transparent 0);background-size:20px 20px;
+    -webkit-mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000,transparent 70%);
+    mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000,transparent 70%)}
+  .has-pointer .spotlight{opacity:1}
+
+  /* Fade-and-rise: only elements below the fold at load are held back, so the first screen is always complete. */
+  .rv-wait{opacity:0;transform:translateY(22px)}
+  .rv-in{opacity:1;transform:none;transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--rv-d,0s)}
+
+  /* Section headings: the rule draws across, the title slides in. */
+  .section-head{border-top-color:transparent!important;position:relative}
+  .section-head::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--ink);transform-origin:left;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+  .section-head::after{content:"";position:absolute;left:0;top:-1px;width:64px;height:2px;background:var(--accent);transform-origin:left;transition:transform .9s .25s cubic-bezier(.2,.7,.2,1)}
+  .section-head.rv-wait{opacity:1;transform:none}
+  .section-head.rv-wait::before,.section-head.rv-wait::after{transform:scaleX(0)}
+  .section-head.rv-wait h2{opacity:0;transform:translateX(-18px)}
+  .section-head h2{transition:opacity .6s .15s,transform .6s .15s cubic-bezier(.2,.7,.2,1)}
+
+  /* Card tilt with a soft sheen. */
+  .tilt{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s;will-change:transform}
+  .tilt.tilting{transition:transform .08s linear,box-shadow .25s,border-color .25s}
+  .tilt::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .3s;
+    background:radial-gradient(400px circle at var(--sx,50%) var(--sy,50%),rgba(157,184,230,.12),transparent 50%)}
+  .tilt.tilting::before{opacity:1}
+
+  /* Magnetic buttons. */
+  .btn{transition:transform .35s cubic-bezier(.2,.7,.2,1),background .2s,border-color .2s,color .2s}
+  .btn.magnet{transition:transform .1s linear,background .2s,border-color .2s,color .2s}
+
+  /* Sliding nav underline (desktop). */
+  .nav-ink{position:absolute;bottom:0;height:2px;background:var(--accent);left:0;width:0;opacity:0;transition:transform .35s cubic-bezier(.2,.7,.2,1),width .35s cubic-bezier(.2,.7,.2,1),opacity .2s;pointer-events:none}
+  .site-nav ul{position:relative}
+  .nav-ready .site-nav a[aria-current="page"]{box-shadow:none}
+
+  /* Footnote preview popup. */
+  .fn-pop{position:absolute;z-index:40;max-width:min(360px,calc(100vw - 32px));padding:14px 16px;font-family:var(--body);font-size:.88rem;line-height:1.5;
+    color:var(--ink);background:var(--solid);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:4px;box-shadow:0 18px 40px -20px rgba(0,0,0,.9);
+    opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none}
+  .fn-pop.show{opacity:1;transform:none}
+  .fn-pop p{margin:0}
+
+  @media (prefers-reduced-motion:reduce){
+    .rv-wait,.section-head.rv-wait h2{opacity:1!important;transform:none!important}
+    .section-head.rv-wait::before,.section-head.rv-wait::after{transform:none!important}
+    @view-transition { navigation: none; }
+  }
+</style>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const root = document.documentElement;
+
+  // Spotlight follows the cursor.
+  if (finePointer && !reduce) {
+    let raf = 0, x = 0, y = 0;
+    addEventListener('pointermove', (e) => {
+      x = e.clientX; y = e.clientY;
+      if (!raf) raf = requestAnimationFrame(() => {
+        root.style.setProperty('--mx', x + 'px'); root.style.setProperty('--my', y + 'px');
+        root.classList.add('has-pointer'); raf = 0;
+      });
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => root.classList.remove('has-pointer'));
+  }
+
+  // Scroll reveals.
+  const revealSel = '.section-head,.card,.feature,.pillar,.lens > div,.intro,.lensmap,.principles > div,.stats > div,.prose blockquote,.empty,.questions li';
+  if (!reduce && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target as HTMLElement;
+        el.classList.remove('rv-wait'); el.classList.add('rv-in'); io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    const fold = innerHeight * 0.92;
+    document.querySelectorAll<HTMLElement>(revealSel).forEach((el) => {
+      if (el.getBoundingClientRect().top < fold) return; // already on screen: leave it visible
+      const sibs = el.parentElement ? [...el.parentElement.children].filter((c) => c.matches(revealSel)) : [];
+      el.style.setProperty('--rv-d', `${Math.min(sibs.indexOf(el), 5) * 0.08}s`);
+      el.classList.add('rv-wait'); io.observe(el);
+    });
+  }
+
+  // Card tilt.
+  if (finePointer && !reduce) {
+    document.querySelectorAll<HTMLElement>('.card,.feature').forEach((card) => {
+      card.classList.add('tilt');
+      const max = card.classList.contains('feature') ? 3 : 6;
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--ry', `${(px - 0.5) * max}deg`);
+        card.style.setProperty('--rx', `${(0.5 - py) * max}deg`);
+        card.style.setProperty('--sx', `${px * 100}%`); card.style.setProperty('--sy', `${py * 100}%`);
+        card.classList.add('tilting');
+      });
+      card.addEventListener('pointerleave', () => {
+        card.classList.remove('tilting'); card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+
+  // Magnetic buttons.
+  if (finePointer && !reduce) {
+    document.querySelectorAll<HTMLElement>('.btn').forEach((b) => {
+      b.addEventListener('pointermove', (e) => {
+        const r = b.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+        b.classList.add('magnet'); b.style.transform = `translate(${dx * 0.25}px, ${dy * 0.35}px)`;
+      });
+      b.addEventListener('pointerleave', () => { b.classList.remove('magnet'); b.style.transform = ''; });
+    });
+  }
+
+  // Sliding nav underline.
+  const list = document.querySelector<HTMLElement>('.site-nav ul');
+  if (list && finePointer && matchMedia('(min-width: 841px)').matches) {
+    const ink = document.createElement('span'); ink.className = 'nav-ink'; list.appendChild(ink);
+    const current = list.querySelector<HTMLElement>('a[aria-current="page"]');
+    const moveTo = (a: HTMLElement | null) => {
+      if (!a) { ink.style.opacity = '0'; return; }
+      const lr = list.getBoundingClientRect(), ar = a.getBoundingClientRect();
+      ink.style.width = `${ar.width - 20}px`; ink.style.transform = `translateX(${ar.left - lr.left + 10}px)`; ink.style.opacity = '1';
+    };
+    document.documentElement.classList.add('nav-ready');
+    list.querySelectorAll<HTMLElement>('a').forEach((a) => a.addEventListener('pointerenter', () => moveTo(a)));
+    list.addEventListener('pointerleave', () => moveTo(current));
+    requestAnimationFrame(() => moveTo(current));
+    addEventListener('resize', () => moveTo(current));
+  }
+
+  // Count-up numbers: any element with data-count animates its number when it scrolls into view.
+  const counters = document.querySelectorAll<HTMLElement>('[data-count]');
+  const runCount = (el: HTMLElement) => {
+    const m = el.textContent!.match(/^(.*?)([\d,]*\.?\d+)(.*)$/s);
+    if (!m) return;
+    const [, pre, num, post] = m;
+    const target = parseFloat(num.replace(/,/g, '')), dec = (num.split('.')[1] || '').length, commas = num.includes(',');
+    const fmt = (v: number) => { const s = v.toFixed(dec); return commas ? Number(s).toLocaleString('en-IN', { minimumFractionDigits: dec }) : s; };
+    const t0 = performance.now(), dur = 1400;
+    el.textContent = pre + fmt(0) + post;
+    const step = (t: number) => {
+      const k = Math.min(1, Math.max(0, (t - t0) / dur)), eased = 1 - Math.pow(1 - k, 3);
+      el.textContent = pre + fmt(target * eased) + post;
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  if (counters.length && !reduce) {
+    const cio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { runCount(e.target as HTMLElement); cio.unobserve(e.target); } }), { threshold: 0.6 });
+    counters.forEach((c) => {
+      // Below the fold, start from zero so the count-up is seen; on screen at load, leave the real figure.
+      if (c.getBoundingClientRect().top > innerHeight) c.textContent = c.textContent!.replace(/[\d,]*\.?\d+/, '0');
+      cio.observe(c);
+    });
+  }
+
+  // Footnote previews: hover or focus a footnote number to see the note.
+  const refs = document.querySelectorAll<HTMLAnchorElement>('a[data-footnote-ref]');
+  if (refs.length) {
+    const pop = document.createElement('div'); pop.className = 'fn-pop'; pop.setAttribute('role', 'tooltip'); pop.id = 'fn-pop';
+    document.body.appendChild(pop);
+    const show = (a: HTMLAnchorElement) => {
+      const li = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+      if (!li) return;
+      const clone = li.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('[data-footnote-backref]').forEach((n) => n.remove());
+      pop.innerHTML = clone.innerHTML;
+      const r = a.getBoundingClientRect();
+      pop.style.left = '0px'; pop.style.top = '0px'; pop.classList.add('show');
+      const w = pop.offsetWidth, h = pop.offsetHeight;
+      const left = Math.max(16, Math.min(scrollX + r.left - w / 2 + r.width / 2, scrollX + innerWidth - w - 16));
+      const above = r.top - h - 10 > 0;
+      pop.style.left = `${left}px`;
+      pop.style.top = `${scrollY + (above ? r.top - h - 10 : r.bottom + 10)}px`;
+    };
+    const hide = () => pop.classList.remove('show');
+    refs.forEach((a) => {
+      a.addEventListener('pointerenter', () => show(a));
+      a.addEventListener('focus', () => show(a));
+      a.addEventListener('pointerleave', hide);
+      a.addEventListener('blur', hide);
+    });
+  }
+</script>
