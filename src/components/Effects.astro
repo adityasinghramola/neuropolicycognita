@@ -1,6 +1,6 @@
 ---
 // Site-wide motion: cursor spotlight, scroll reveals, card tilt, magnetic buttons,
-// sliding nav underline, count-up numbers, footnote previews and page transitions.
+// sliding nav underline, footnote previews and page transitions.
 // Everything is skipped for visitors who ask for reduced motion; hover effects only run with a mouse.
 ---
 <div class="spotlight" aria-hidden="true"></div>
@@ -84,7 +84,7 @@
   }
 
   // Scroll reveals.
-  const revealSel = '.section-head,.card,.feature,.pillar,.lens > div,.intro,.lensmap,.principles > div,.stats > div,.prose blockquote,.empty,.questions li';
+  const revealSel = '.section-head,.card,.feature,.pillar,.lens > div,.intro,.lensmap,.principles > div,.prose blockquote,.empty,.questions li';
   if (!reduce && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
@@ -148,32 +148,6 @@
     list.addEventListener('pointerleave', () => moveTo(current));
     requestAnimationFrame(() => moveTo(current));
     addEventListener('resize', () => moveTo(current));
-  }
-
-  // Count-up numbers: any element with data-count animates its number when it scrolls into view.
-  const counters = document.querySelectorAll<HTMLElement>('[data-count]');
-  const runCount = (el: HTMLElement) => {
-    const m = el.textContent!.match(/^(.*?)([\d,]*\.?\d+)(.*)$/s);
-    if (!m) return;
-    const [, pre, num, post] = m;
-    const target = parseFloat(num.replace(/,/g, '')), dec = (num.split('.')[1] || '').length, commas = num.includes(',');
-    const fmt = (v: number) => { const s = v.toFixed(dec); return commas ? Number(s).toLocaleString('en-IN', { minimumFractionDigits: dec }) : s; };
-    const t0 = performance.now(), dur = 1400;
-    el.textContent = pre + fmt(0) + post;
-    const step = (t: number) => {
-      const k = Math.min(1, Math.max(0, (t - t0) / dur)), eased = 1 - Math.pow(1 - k, 3);
-      el.textContent = pre + fmt(target * eased) + post;
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  };
-  if (counters.length && !reduce) {
-    const cio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { runCount(e.target as HTMLElement); cio.unobserve(e.target); } }), { threshold: 0.6 });
-    counters.forEach((c) => {
-      // Below the fold, start from zero so the count-up is seen; on screen at load, leave the real figure.
-      if (c.getBoundingClientRect().top > innerHeight) c.textContent = c.textContent!.replace(/[\d,]*\.?\d+/, '0');
-      cio.observe(c);
-    });
   }
 
   // Footnote previews: hover or focus a footnote number to see the note.
