@@ -8,15 +8,9 @@ export function getStaticPaths() {
 }
 const section = Astro.params.section as Lens;
 const s = SECTIONS[section];
-const { home, crossing } = inSection(await allArticles(), section);
-const list = [
-  ...home.map((article) => ({ article, tags: ['home'] })),
-  ...crossing.map((article) => ({ article, tags: ['cross'] })),
-];
-const filters = [
-  { key: 'home', label: `Filed in ${s.label}` },
-  { key: 'cross', label: 'From other sections' },
-];
+// Each section lists only the essays filed in it.
+const { home } = inSection(await allArticles(), section);
+const list = home.map((article) => ({ article, tags: [section] }));
 ---
 <Base title={s.label} description={s.lede} active={section}>
   <div class={`wrap ${section}`}>
@@ -27,7 +21,7 @@ const filters = [
     </header>
 
     {list.length > 0 ? (
-      <ArticleBrowser articles={list} filters={filters} />
+      <ArticleBrowser articles={list} />
     ) : (
       <div class="empty">
         <h2>First essays coming soon</h2>
