@@ -1,25 +1,37 @@
-/* NeuroPolicy Cognita — think-tank palette: white paper, black ink, navy as the one accent.
-   Each lens keeps its own shade within that range so the cross-links stay readable. */
+/* NeuroPolicy Cognita — dark think-tank theme: a black patterned background (adapted from a
+   21st.dev "elegant dark pattern"), white type, navy-blue as the one accent. Dark in every viewer theme. */
 :root{
-  --paper:#ffffff; --surface:#f5f6f8; --ink:#0e1116; --muted:#5b6270; --line:#dfe2e7;
-  --accent:#14284b; --accent-ink:#14284b; --on-accent:#ffffff; --stripe:#eef0f3;
-  --l-finance:#14284b; --l-politics:#0e1116; --l-marketing:#3f679e; --l-thinking:#6b7280;
+  --paper:#000000; --solid:#0b0d12; --card:rgba(12,14,20,.78); --surface:rgba(255,255,255,.035);
+  --ink:#eef0f4; --muted:#9aa2b1; --line:rgba(255,255,255,.12);
+  --accent:#9db8e6; --accent-ink:#9db8e6; --on-accent:#05070b; --stripe:rgba(255,255,255,.05);
+  --l-finance:#9db8e6; --l-politics:#eef0f4; --l-marketing:#6f93cc; --l-thinking:#a3abb8;
+  --streak:rgb(80,130,215);
   --display:"Gloock", Georgia, "Times New Roman", serif;
   --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif:"Literata", Georgia, serif;
   --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   --s1:.8125rem; --s3:1.25rem; --s4:1.75rem; --s5:clamp(2.2rem,5vw,3.4rem); --s6:clamp(2.6rem,7.5vw,5.4rem);
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root{
-  --paper:#0b0d12; --surface:#13161d; --ink:#eef0f4; --muted:#9aa2b1; --line:#262b35;
-  --accent:#9db8e6; --accent-ink:#9db8e6; --on-accent:#0b0d12; --stripe:#171b23;
-  --l-finance:#9db8e6; --l-politics:#eef0f4; --l-marketing:#6f93cc; --l-thinking:#a3abb8;
-  color-scheme:dark}}
+
+/* Fixed background pattern behind every page */
+.bg-pattern{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#000}
+.bg-pattern .glow{position:absolute;inset:0;background:radial-gradient(100% 100% at 0% 0%,rgb(46,46,46) 0%,rgb(0,0,0) 100%);
+  -webkit-mask:radial-gradient(125% 100% at 0% 0%,#000 0%,rgba(0,0,0,.224) 88%,transparent 100%);
+  mask:radial-gradient(125% 100% at 0% 0%,#000 0%,rgba(0,0,0,.224) 88%,transparent 100%)}
+.bg-pattern .streak{position:absolute;inset:0;opacity:.2;background:linear-gradient(var(--streak) 0%,transparent 100%);transform:skewX(45deg)}
+.bg-pattern .s1{-webkit-mask:linear-gradient(90deg,transparent 0%,#000 20%,transparent 36%,#000 55%,rgba(0,0,0,.13) 67%,#000 78%,transparent 97%);mask:linear-gradient(90deg,transparent 0%,#000 20%,transparent 36%,#000 55%,rgba(0,0,0,.13) 67%,#000 78%,transparent 97%)}
+.bg-pattern .s2{-webkit-mask:linear-gradient(90deg,transparent 11%,#000 25%,rgba(0,0,0,.55) 41%,rgba(0,0,0,.13) 67%,#000 78%,transparent 97%);mask:linear-gradient(90deg,transparent 11%,#000 25%,rgba(0,0,0,.55) 41%,rgba(0,0,0,.13) 67%,#000 78%,transparent 97%)}
+.bg-pattern .s3{-webkit-mask:linear-gradient(90deg,transparent 9%,#000 20%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.42) 40%,#000 48%,rgba(0,0,0,.27) 54%,rgba(0,0,0,.13) 78%,#000 88%,transparent 97%);mask:linear-gradient(90deg,transparent 9%,#000 20%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.42) 40%,#000 48%,rgba(0,0,0,.27) 54%,rgba(0,0,0,.13) 78%,#000 88%,transparent 97%)}
+.bg-pattern .s4{-webkit-mask:linear-gradient(90deg,transparent 0%,#000 17%,rgba(0,0,0,.55) 26%,#000 35%,transparent 47%,rgba(0,0,0,.13) 69%,#000 79%,transparent 97%);mask:linear-gradient(90deg,transparent 0%,#000 17%,rgba(0,0,0,.55) 26%,#000 35%,transparent 47%,rgba(0,0,0,.13) 69%,#000 79%,transparent 97%)}
+.bg-pattern .s5{-webkit-mask:linear-gradient(90deg,transparent 0%,#000 20%,rgba(0,0,0,.55) 27%,#000 42%,transparent 48%,rgba(0,0,0,.13) 67%,#000 74%,#000 82%,rgba(0,0,0,.47) 88%,transparent 97%);mask:linear-gradient(90deg,transparent 0%,#000 20%,rgba(0,0,0,.55) 27%,#000 42%,transparent 48%,rgba(0,0,0,.13) 67%,#000 74%,#000 82%,rgba(0,0,0,.47) 88%,transparent 97%)}
+.bg-pattern .grain{position:absolute;inset:0;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px}
+.bg-pattern .dots{position:absolute;inset:0;opacity:.2;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.5) 1px,transparent 0);background-size:20px 20px}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.65;-webkit-font-smoothing:antialiased}
+body{margin:0;background:#000;color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.65;-webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
@@ -43,7 +55,7 @@ p{margin:0}
 .menu-btn{display:none;background:none;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:.85rem;padding:6px 12px;cursor:pointer}
 @media (max-width:840px){
   .menu-btn{display:block}
-  .site-nav{display:none;position:absolute;left:0;right:0;top:100%;background:var(--paper);border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+  .site-nav{display:none;position:absolute;left:0;right:0;top:100%;background:var(--solid);border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
   .site-nav.open{display:block}
   .site-nav ul{flex-direction:column}
   .site-nav a{padding:10px 0;font-size:1rem}
@@ -68,8 +80,8 @@ a.chip:hover{background:var(--c);color:var(--paper)}
 
 /* article cards — boxed, monochrome photos that turn to colour on hover */
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
-.card{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:box-shadow .25s,border-color .25s}
-.card:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line));box-shadow:0 10px 30px -18px rgba(14,17,22,.35)}
+.card{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:box-shadow .25s,border-color .25s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 14px 34px -20px rgba(80,130,215,.45)}
 .card .cover{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:var(--stripe)}
 .card .cover img,.feature .cover img{width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter .4s ease,transform .6s ease}
 .card:hover .cover img,.feature:hover .cover img{filter:none;transform:scale(1.02)}
@@ -92,7 +104,7 @@ a.chip:hover{background:var(--c);color:var(--paper)}
 @media (max-width:600px){.cards{grid-template-columns:1fr}}
 
 /* featured article */
-.feature{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--paper);margin-bottom:40px}
+.feature{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card);margin-bottom:40px}
 .feature .cover{position:relative;min-height:320px;background:var(--stripe);overflow:hidden}
 .feature .cover img{position:absolute;inset:0}
 .feature .body{display:flex;flex-direction:column;justify-content:center;gap:16px;padding:clamp(24px,4vw,44px);min-width:0}
@@ -104,7 +116,7 @@ a.chip:hover{background:var(--c);color:var(--paper)}
 
 /* filter buttons */
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
-.filters button{font:inherit;font-size:.88rem;font-weight:500;padding:7px 16px;border-radius:5px;border:1px solid var(--line);background:var(--paper);color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.filters button{font:inherit;font-size:.88rem;font-weight:500;padding:7px 16px;border-radius:5px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
 .filters button:hover{background:var(--surface);color:var(--ink)}
 .filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .no-match{color:var(--muted);padding:24px 0}
