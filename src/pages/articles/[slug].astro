@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
+import Cover from '../../components/Cover.astro';
 import { render } from 'astro:content';
 import { allArticles, related, url, SECTIONS, fmtDate, readingTime, lensesOf } from '../../lib/site';
 
@@ -30,7 +31,7 @@ const ls = lensesOf(article);
 
     {d.cover && (
       <figure class="wrap a-cover">
-        <img src={url(d.cover)} alt={d.coverAlt ?? ''} />
+        <Cover src={d.cover} alt={d.coverAlt ?? ''} sizes="(max-width: 1120px) 100vw, 1088px" eager />
       </figure>
     )}
 

@@ -1,11 +1,11 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import responsiveImages from './src/integrations/responsive-images.mjs';
 
-// When your domain is live, change `site` to it (e.g. 'https://neuropolicycognita.com').
-// Until then GitHub serves the site at https://<username>.github.io/<repo>/,
-// so set SITE and BASE accordingly (the deploy workflow does this for you).
+// The deploy workflow sets SITE from public/CNAME, so this fallback only matters for local builds.
 export default defineConfig({
-  site: process.env.SITE || 'https://neuropolicycognita.com',
+  site: process.env.SITE || 'https://neuropolicycognita.org',
   base: process.env.BASE || '/',
   trailingSlash: 'ignore',
+  integrations: [responsiveImages()],
 });

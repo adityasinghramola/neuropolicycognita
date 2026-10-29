@@ -1,0 +1,19 @@
+---
+// A cover photo that serves small WebP files to phones and larger ones to desktops,
+// falling back to the original JPEG/PNG in very old browsers.
+import { url } from '../lib/site';
+interface Props { src: string; alt?: string; sizes: string; eager?: boolean }
+const { src, alt = '', sizes, eager = false } = Astro.props;
+const WIDTHS = [480, 800, 1200];
+const local = /^\/images\/.+\.(jpe?g|png)$/i.test(src);
+const stem = src.replace(/\.(jpe?g|png)$/i, '');
+const srcset = WIDTHS.map((w) => `${url(`${stem}-${w}.webp`)} ${w}w`).join(', ');
+---
+{local ? (
+  <picture>
+    <source type="image/webp" srcset={srcset} sizes={sizes} />
+    <img src={url(src)} alt={alt} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : 'auto'} decoding="async" />
+  </picture>
+) : (
+  <img src={src.startsWith('/') ? url(src) : src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+)}

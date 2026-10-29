@@ -1,4 +1,5 @@
 ---
+import Cover from './Cover.astro';
 import { url, SECTIONS, fmtDate, readingTime, initials, type Article } from '../lib/site';
 interface Props { article: Article }
 const { article } = Astro.props;
@@ -7,7 +8,7 @@ const href = url(`/articles/${article.id}/`);
 ---
 <article class={`feature ${d.section}`}>
   <a class="cover" href={href} tabindex="-1" aria-hidden="true">
-    {d.cover && <img src={url(d.cover)} alt="" decoding="async" />}
+    {d.cover && <Cover src={d.cover} sizes="(max-width: 760px) 100vw, 560px" />}
     <span class="pill-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>{readingTime(article.body)} min read</span>
   </a>
   <div class="body">

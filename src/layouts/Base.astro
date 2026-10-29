@@ -1,5 +1,9 @@
 ---
+import '../styles/fonts.css';
 import '../styles/global.css';
+// The two faces visible in the first screen are preloaded so text appears without a font swap.
+import gloock from '@fontsource/gloock/files/gloock-latin-400-normal.woff2?url';
+import publicSans from '@fontsource/public-sans/files/public-sans-latin-400-normal.woff2?url';
 import { url, SECTIONS, LENS_ORDER } from '../lib/site';
 import FooterArt from '../components/FooterArt.astro';
 import Effects from '../components/Effects.astro';
@@ -29,9 +33,8 @@ const nav = [
   {ogImage && <meta property="og:image" content={ogImage} />}
   <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
   <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="preload" href={gloock} as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href={publicSans} as="font" type="font/woff2" crossorigin />
 </head>
 <body>
   <div class="bg-pattern" aria-hidden="true">
